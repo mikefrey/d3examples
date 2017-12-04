@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style></style>
+  </head>
+
+  <body>
+
+    <svg class="surface" width="800" height="600">
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+      <rect x="0" y="0" width="50" height="50"></rect>
+    </svg>
+
+    <script src="/d3.v4.min.js" charset="utf-8"></script>
+    <script>
+
+      d3.selectAll('rect')
+        .data([0, 40, 80, 120, 160, 200, 240, 280, 320])
+        .attr('x', (d, i) => i * 60)
+        .attr('y', (d, i) => i * 60)
+        .attr('fill', d => `hsl(${d},100%,50%)`)
+
+    </script>
+  </body>
+
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style></style>
+  </head>
+
+  <body>
+
+    <svg class="surface" width="1000" height="600"></svg>
+
+    <script src="/d3.v4.min.js" charset="utf-8"></script>
+    <script>
+
+      const surface = d3.select('.surface')
+
+      function tick(data) {
+        const squares = surface.selectAll('rect').data(data)
+
+        const update = squares
+        const enter = squares.enter()
+        const exit = squares.exit()
+
+        // update
+        //   .attr('fill', d => `hsl(${d},100%,50%)`)
+        //   .attr('x', (d, i) => i * 60)
+
+        enter
+          .append('rect')
+          .attr('y', 0)
+          .attr('width', 50)
+          .attr('height', 50)
+        .merge(update)
+          .attr('fill', d => `hsl(${d},100%,50%)`)
+          .attr('x', (d, i) => i * 60)
+
+        exit.remove()
+      }
+
+      const data = [0, 40, 80, 120, 160, 200, 240, 280, 320]
+      d3.interval(() => {
+        data.shift()
+        data.push(Math.floor(Math.random()*360))
+        tick(data)
+        console.log(data)
+      }, 1500)
+
+      tick(data)
+
+    </script>
+  </body>
+
+</html>

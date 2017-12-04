@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .up line { stroke: green; }
+      .down line { stroke: red; }
+      .same line { stroke: black; }
+      rect { fill: rgba(0,0,0,0.2); }
+      .hoverIndicator line { stroke: #000; }
+      .hoverIndicator rect { stroke: #000; fill: #fff; }
+    </style>
+  </head>
+  <body>
+
+    <svg width="960" height="300"></rect></svg>
+
+    <script src="/d3.v4.min.js"></script>
+    <script>
+      d3.tsv('/data/btc2.tsv', (err, data) => {
+        data.forEach(d => d.time = new Date(d.time))
+        renderChart(data)
+      })
+
+      const svg = d3.select('svg')
+      const margin = {top: 20, right: 60, bottom: 30, left: 60}
+      const width = +svg.attr('width') - margin.left - margin.right
+      const height = +svg.attr('height') - margin.top - margin.bottom
+
+      const x = d3.scaleTime().range([0, width])
+      const y = d3.scaleLinear().rangeRound([height, 0])
+      const v = d3.scaleLinear().rangeRound([height, height*2/3])
+
+      const chart = svg.append('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+
+
+      function renderChart(data) {
+
+        const bandwidth = width / data.length
+
+        x.domain([d3.min(data, d => d.time), d3.max(data, d => d.time)])
+        y.domain([d3.min(data, d => +d.low), d3.max(data, d => +d.high)])
+        v.domain([d3.min(data, d => +d.volume), d3.max(data, d => +d.volume)])
+
+        chart.append('g')
+            .attr('class', 'axis axis--x')
+            .attr('transform', 'translate(0,' + height + ')')
+            .call(d3.axisBottom(x))
+
+        chart.append('g')
+            .attr('class', 'axis axis--y')
+            .call(d3.axisLeft(y).ticks())
+
+        const ohlc = chart.selectAll('.ohlc')
+          .data(data)
+          .enter().append('g')
+            .attr('class', 'ohlc')
+            .attr('class', direction)
+            .attr('transform', d => `translate(${x(d.time)+bandwidth/2})`)
+
+        ohlc.append('rect')
+          .attr('x', -bandwidth/2)
+          .attr('y', d => 0)
+          .attr('width', bandwidth)
+          .attr('height', d => height)
+          .style('fill', 'transparent')
+
+        ohlc.append('line')
+          .attr('y1', d => y(d.high))
+          .attr('y2', d => y(d.low))
+
+        ohlc.append('line')
+          .attr('y1', d => y(d.open))
+          .attr('y2', d => y(d.open))
+          .attr('x1', 0)
+          .attr('x2', -bandwidth/2+1)
+
+        ohlc.append('line')
+          .attr('y1', d => y(d.close))
+          .attr('y2', d => y(d.close))
+          .attr('x1', 0)
+          .attr('x2', bandwidth/2-1)
+
+        ohlc.append('rect')
+          .attr('x', -bandwidth/2+1)
+          .attr('y', d => v(d.volume))
+          .attr('width', bandwidth-2)
+          .attr('height', d => height - v(d.volume))
+
+
+        const hoverIndicator = chart.append('g')
+          .attr('class', 'hoverIndicator')
+          .attr('font-family', 'sans-serif')
+          .attr('font-size', '10')
+          .attr('text-anchor', 'middle')
+          .style('display', 'none')
+
+        hoverIndicator.append('line').attr('y2', height)
+        hoverIndicator.append('rect').attr('x', -45).attr('y', height)
+          .attr('height', 20).attr('width', 90)
+          .attr('rx', 5).attr('ry', 5)
+        const dateLabel = hoverIndicator.append('text')
+          .attr('y', height)
+          .attr('dy', '1.4em')
+          .attr('fill', '#000')
+        hoverIndicator.append('rect').attr('x', -45)
+          .attr('height', 20).attr('width', 90)
+          .attr('rx', 5).attr('ry', 5)
+        const priceLabel = hoverIndicator.append('text')
+          .attr('dy', '1.4em')
+          .attr('fill', '#000')
+
+        ohlc.on('mouseover', function(d, i, items) {
+          dateLabel.text(`${d.time.toDateString()}`)
+          priceLabel.text(`$${d.close}`)
+          hoverIndicator
+            .style('display', '')
+            .transition()
+              .duration(50)
+              .attr('transform', `translate(${x(d.time)+bandwidth/2},0)`)
+        })
+      }
+
+      function direction(d) {
+        return +d.close > +d.open ? 'up' : +d.close == +d.open ? 'same' : 'down'
+      }
+    </script>
+  </body>
+</html>
